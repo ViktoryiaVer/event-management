@@ -1,6 +1,9 @@
 package com.eventcompany.eventmanagement.controller;
 
+import com.eventcompany.eventmanagement.exception.ObjectNotFoundException;
 import com.eventcompany.eventmanagement.model.entity.Event;
+import com.eventcompany.eventmanagement.model.entity.Participant;
+import com.eventcompany.eventmanagement.model.repository.EventRepository;
 import com.eventcompany.eventmanagement.service.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EventController {
     private final EventService eventService;
+    private final EventRepository eventRepository;
 
     @GetMapping
     public List<Event> getAllEvents() {
@@ -42,6 +46,13 @@ public class EventController {
     public Event updateEvent(@PathVariable String id, @RequestBody Event event) {
         event.setId(id);
         return eventService.update(event);
+    }
+
+    @PutMapping("/{id}/participants")
+    public Event addParticipantToEvent(@PathVariable String id, @RequestBody Participant participant) {
+        Event eventToUpdate = eventRepository.findById(id).orElseThrow( () -> new ObjectNotFoundException("Event not found"));
+        eventToUpdate.getParticipants().add(participant);
+        return eventService.update(eventToUpdate);
     }
 
     @DeleteMapping("/{id}")
