@@ -28,28 +28,33 @@ public class EventController {
     private final EventRepository eventRepository;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public List<Event> getAllEvents() {
         return eventService.getAll();
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public Event getEventById(@PathVariable String id) {
         return eventService.getById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public Event saveEvent(@RequestBody Event event) {
         return eventService.save(event);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public Event updateEvent(@PathVariable String id, @RequestBody Event event) {
         event.setId(id);
         return eventService.update(event);
     }
 
     @PutMapping("/{id}/participants")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public Event addParticipantToEvent(@PathVariable String id, @RequestBody Participant participant) {
         Event eventToUpdate = eventRepository.findById(id).orElseThrow( () -> new ObjectNotFoundException("Event not found"));
         eventToUpdate.getParticipants().add(participant);
