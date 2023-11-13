@@ -1,5 +1,35 @@
-version: '3'
+version: '3.8'
 services:
+  postgres:
+    image: postgres:16.0
+    container_name: postgres
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    environment:
+        POSTGRES_DB: keycloak-db
+        POSTGRES_PASSWORD: root
+        PGDATA: "/var/lib/postgresql/data/pgdata"
+    ports:
+      - 5432:5432
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.5
+    container_name: keycloak
+    command: ["start-dev", "--http-port=8180", "--import-realm"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres/keycloak-db
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: root
+    ports:
+      - 8180:8180
+    volumes:
+      - ./imports/realm.json:/opt/keycloak/data/import/realm.json
+    depends_on:
+    - postgres
+
   mongodb:
     image: mongodb/mongodb-community-server:6.0-ubi8
     environment:
