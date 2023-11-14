@@ -6,7 +6,6 @@ services:
     environment:
         POSTGRES_DB: keycloak-db
         POSTGRES_PASSWORD: root
-        PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - 5431:5432
     volumes:
