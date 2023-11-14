@@ -3,14 +3,16 @@ services:
   postgres:
     image: postgres:16.0
     container_name: postgres
-    volumes:
-      - ./postgres_data:/var/lib/postgresql/data
     environment:
         POSTGRES_DB: keycloak-db
         POSTGRES_PASSWORD: root
-        PGDATA: "/var/lib/postgresql/data/pgdata"
+        PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - 5432:5432
+      - 5431:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ems-app
 
   keycloak:
     image: quay.io/keycloak/keycloak:22.0.5
@@ -27,18 +29,38 @@ services:
       - 8180:8180
     volumes:
       - ./imports/realm.json:/opt/keycloak/data/import/realm.json
+    networks:
+      - ems-app
     depends_on:
     - postgres
 
   mongodb:
     image: mongodb/mongodb-community-server:6.0-ubi8
+    container_name: mongodb
     environment:
       - MONGO_INITDB_ROOT_USERNAME=user
       - MONGO_INITDB_ROOT_PASSWORD=pass
       - MONGO_INITDB_DATABASE=eventManagementDb
     ports:
-      - "27017:27017"
+      - 27018:27017
     volumes:
-      - type: bind
-        source: ./data
-        target: /data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - mongodb-data:/data/db
+      - mongodb-log:/var/log/mongodb
+      - mongodb-config:/data/configdb
+    networks:
+      - ems-app
+
+volumes:
+  postgres_data:
+    driver: local
+  mongodb-data:
+    driver: local
+  mongodb-log:
+    driver: local
+  mongodb-config:
+    driver: local
+
+networks:
+  ems-app:
+    driver: bridge
