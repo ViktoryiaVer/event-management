@@ -1,6 +1,7 @@
 package com.eventcompany.eventmanagement.service;
 
 import com.eventcompany.eventmanagement.model.entity.Event;
+import com.eventcompany.eventmanagement.model.entity.Participant;
 
 import java.util.List;
 
@@ -14,4 +15,6 @@ public interface EventService {
     Event update(Event event);
 
     void deleteById(String id);
+
+    Event addParticipant(String eventId, Participant participant);
 }

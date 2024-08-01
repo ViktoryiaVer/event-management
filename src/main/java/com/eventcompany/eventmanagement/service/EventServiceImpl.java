@@ -2,6 +2,7 @@ package com.eventcompany.eventmanagement.service;
 
 import com.eventcompany.eventmanagement.exception.ObjectNotFoundException;
 import com.eventcompany.eventmanagement.model.entity.Event;
+import com.eventcompany.eventmanagement.model.entity.Participant;
 import com.eventcompany.eventmanagement.model.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,5 +38,12 @@ public class EventServiceImpl implements EventService {
     @Override
     public void deleteById(String id) {
         repository.deleteById(id);
+    }
+
+    @Override
+    public Event addParticipant(String eventId, Participant participant) {
+        Event eventToUpdate = getById(eventId);
+        eventToUpdate.getParticipants().add((participant));
+        return update(eventToUpdate);
     }
 }
