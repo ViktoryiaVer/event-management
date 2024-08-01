@@ -1,9 +1,9 @@
 package com.eventcompany.eventmanagement.controller;
 
-import com.eventcompany.eventmanagement.exception.ObjectNotFoundException;
-import com.eventcompany.eventmanagement.model.entity.Event;
-import com.eventcompany.eventmanagement.model.entity.Participant;
-import com.eventcompany.eventmanagement.model.repository.EventRepository;
+import com.eventcompany.eventmanagement.controller.dto.EventDto;
+import com.eventcompany.eventmanagement.controller.dto.ParticipantDto;
+import com.eventcompany.eventmanagement.mapper.EventMapper;
+import com.eventcompany.eventmanagement.mapper.ParticipantMapper;
 import com.eventcompany.eventmanagement.service.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,40 +25,39 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EventController {
     private final EventService eventService;
-    private final EventRepository eventRepository;
+    private final EventMapper eventMapper;
+    private final ParticipantMapper participantMapper;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public List<Event> getAllEvents() {
-        return eventService.getAll();
+    public List<EventDto> getAllEvents() {
+        return eventService.getAll().stream().map(eventMapper::toDto).toList();
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public Event getEventById(@PathVariable String id) {
-        return eventService.getById(id);
+    public EventDto getEventById(@PathVariable String id) {
+        return eventMapper.toDto(eventService.getById(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public Event saveEvent(@RequestBody Event event) {
-        return eventService.save(event);
+    public EventDto saveEvent(@RequestBody EventDto event) {
+        return eventMapper.toDto(eventService.save(eventMapper.toEntity(event)));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public Event updateEvent(@PathVariable String id, @RequestBody Event event) {
+    public EventDto updateEvent(@PathVariable String id, @RequestBody EventDto event) {
         event.setId(id);
-        return eventService.update(event);
+        return eventMapper.toDto(eventService.update(eventMapper.toEntity(event)));
     }
 
     @PutMapping("/{id}/participants")
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public Event addParticipantToEvent(@PathVariable String id, @RequestBody Participant participant) {
-        Event eventToUpdate = eventRepository.findById(id).orElseThrow( () -> new ObjectNotFoundException("Event not found"));
-        eventToUpdate.getParticipants().add(participant);
-        return eventService.update(eventToUpdate);
+    public EventDto addParticipantToEvent(@PathVariable String id, @RequestBody ParticipantDto participant) {
+        return eventMapper.toDto(eventService.addParticipant(id, participantMapper.toEntity(participant)));
     }
 
     @DeleteMapping("/{id}")
